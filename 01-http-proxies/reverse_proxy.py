@@ -2,8 +2,61 @@
 """
 HTTP Reverse Proxy Implementation
 
+🎯 MAIN PURPOSE:
 A reverse proxy sits in front of web servers and forwards client requests
 to backend servers. It acts on behalf of the server, not the client.
+
+🔍 WHAT WE'RE TRYING TO ACCOMPLISH:
+1. **Load Distribution**: Spread incoming requests across multiple backend servers
+2. **High Availability**: Automatically failover to healthy servers
+3. **SSL Termination**: Handle SSL/TLS encryption/decryption
+4. **Performance**: Cache responses and compress content
+5. **Security**: Hide backend server details and filter malicious requests
+6. **Scalability**: Scale backend services independently
+
+📊 REAL-WORLD USE CASES:
+
+1. **Web Application Load Balancing**:
+   - Distribute traffic across multiple app servers
+   - Handle peak traffic without overloading individual servers
+   - Seamless scaling during high demand
+
+2. **Microservices Architecture**:
+   - Route requests to appropriate microservices
+   - Service discovery and health monitoring
+   - API gateway functionality
+
+3. **CDN and Caching**:
+   - Cache static content (images, CSS, JS)
+   - Reduce load on origin servers
+   - Improve global content delivery
+
+4. **Security & Protection**:
+   - Hide backend infrastructure from external users
+   - DDoS protection and rate limiting
+   - Web Application Firewall (WAF)
+
+🧪 TESTING EXAMPLES:
+
+# Start backend servers (simulate with httpbin.org):
+# Server 1: http://httpbin.org (simulated)
+# Server 2: http://jsonplaceholder.typicode.com (simulated)
+
+# Start reverse proxy:
+python3 reverse_proxy.py --port 8080 \
+  --backend http://httpbin.org \
+  --backend http://jsonplaceholder.typicode.com
+
+# Test requests (clients don't know about backends):
+curl http://localhost:8080/get       # Routes to httpbin.org
+curl http://localhost:8080/posts/1   # Routes to jsonplaceholder
+
+# Check proxy status:
+curl http://localhost:8080/_proxy/health
+curl http://localhost:8080/_proxy/stats
+
+🌐 ARCHITECTURE:
+Client → Reverse Proxy → [Backend1, Backend2, Backend3, ...]
 
 Features:
 - Load balancing across multiple backends

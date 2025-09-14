@@ -1,6 +1,110 @@
 #!/usr/bin/env python3
 """
-Load Balancer Proxy Implementation
+Advanced Load Balancer Proxy Implementation
+
+🎯 MAIN PURPOSE:
+A comprehensive load balancer with multiple algorithms, health checking, and advanced features
+for production-grade load balancing scenarios.
+
+🔍 WHAT WE'RE TRYING TO ACCOMPLISH:
+1. **Enterprise-Grade Load Balancing**: Multiple algorithms for different scenarios
+2. **Intelligent Health Monitoring**: Automatic detection and recovery of failed servers
+3. **Session Affinity**: Keep users connected to the same backend (sticky sessions)
+4. **Advanced Analytics**: Detailed metrics and performance monitoring
+5. **Dynamic Configuration**: Runtime algorithm changes and server management
+6. **Production Reliability**: Robust error handling and failover mechanisms
+
+📊 REAL-WORLD USE CASES:
+
+1. **High-Traffic Web Applications**:
+   - Netflix, YouTube: Video streaming with global load distribution
+   - Amazon, eBay: E-commerce platforms handling millions of transactions
+   - Facebook, Twitter: Social media with complex user interactions
+   - Banking systems: Financial applications requiring session persistence
+
+2. **Microservices Architecture**:
+   - Kubernetes ingress controllers distributing container traffic
+   - API gateways routing requests to appropriate microservices
+   - Service mesh implementations (Istio, Linkerd)
+   - Container orchestration platforms
+
+3. **Database Load Balancing**:
+   - MySQL, PostgreSQL read replica distribution
+   - MongoDB sharded cluster access
+   - Redis cluster connection pooling
+   - Database connection load balancing
+
+4. **Enterprise Applications**:
+   - SAP, Oracle applications with multiple app servers
+   - Microsoft Exchange email server load balancing
+   - Citrix virtual desktop infrastructure
+   - Corporate intranet applications
+
+🧪 TESTING EXAMPLES:
+
+# 1. Start with multiple algorithms:
+python3 load_balancer.py --port 8083 \
+  --backends http://httpbin.org http://jsonplaceholder.typicode.com \
+  --weights 2 1 \
+  --algorithm least_connections
+
+# 2. Test different algorithms:
+curl -X POST http://localhost:8083/_lb/algorithm/round_robin
+curl -X POST http://localhost:8083/_lb/algorithm/weighted
+curl -X POST http://localhost:8083/_lb/algorithm/least_connections
+curl -X POST http://localhost:8083/_lb/algorithm/random
+
+# 3. Monitor real-time statistics:
+curl http://localhost:8083/_lb/stats | jq '.'
+curl http://localhost:8083/_lb/health | jq '.'
+
+# 4. Test sticky sessions:
+# Same client IP will be routed to same backend
+for i in {1..5}; do
+  curl http://localhost:8083/get
+done
+
+# 5. Load testing:
+# Use multiple concurrent connections to see load distribution
+ab -n 1000 -c 10 http://localhost:8083/get
+
+🏗️ ADVANCED FEATURES:
+
+1. **Multiple Load Balancing Algorithms**:
+   - Round Robin: Even distribution across all servers
+   - Weighted: Distribute based on server capacity weights  
+   - Least Connections: Route to server with fewest active connections
+   - Random: Random selection for stateless applications
+
+2. **Health Monitoring**:
+   - Automatic health checks every 30 seconds
+   - Remove failed servers from rotation
+   - Automatic recovery when servers come back online
+   - Response time monitoring and alerting
+
+3. **Session Affinity (Sticky Sessions)**:
+   - Client IP based session persistence
+   - Important for applications with server-side state
+   - Automatic failover if preferred server fails
+
+4. **Advanced Metrics**:
+   - Per-backend request counts and success rates
+   - Response time monitoring
+   - Active connection tracking
+   - Health check status and history
+
+5. **Runtime Management**:
+   - Change algorithms without restart
+   - View real-time statistics
+   - Monitor backend health status
+   - Performance analytics
+
+💡 PRODUCTION CONSIDERATIONS:
+- SSL termination and certificate management
+- Rate limiting and DDoS protection  
+- Geographic load balancing
+- Auto-scaling integration
+- Monitoring and alerting systems
 
 A comprehensive load balancer with multiple algorithms and health checking.
 This implementation provides:

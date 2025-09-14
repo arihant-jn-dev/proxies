@@ -2,6 +2,69 @@
 """
 Security Proxy Implementation
 
+🎯 MAIN PURPOSE:
+A comprehensive security-focused proxy that filters, monitors, and protects
+web traffic from malicious content, attacks, and unwanted access.
+
+🔍 WHAT WE'RE TRYING TO ACCOMPLISH:
+1. **Malware Protection**: Block malicious websites and downloads
+2. **Content Filtering**: Control access to inappropriate or harmful content
+3. **DDoS Protection**: Detect and mitigate distributed denial of service attacks
+4. **Data Loss Prevention**: Monitor and block sensitive data transmission
+5. **Threat Intelligence**: Real-time blocking of known malicious IPs and domains
+6. **Compliance**: Enforce corporate security policies and regulations
+
+📊 REAL-WORLD USE CASES:
+
+1. **Corporate Security**:
+   - Enterprise firewalls blocking malicious websites
+   - Employee internet usage monitoring and filtering
+   - Data loss prevention for confidential documents
+   - Compliance with industry regulations (HIPAA, SOX, PCI-DSS)
+
+2. **Educational Institutions**:
+   - K-12 schools filtering inappropriate content
+   - University network protection from malware
+   - Research data protection and monitoring
+   - Bandwidth management and content control
+
+3. **Government & Military**:
+   - National security content filtering
+   - Classified information protection
+   - Threat intelligence integration
+   - Advanced persistent threat (APT) detection
+
+4. **Internet Service Providers**:
+   - ISP-level malware and phishing protection
+   - Parental control services
+   - Botnet communication blocking
+   - Network abuse prevention
+
+🧪 TESTING EXAMPLES:
+
+# 1. Start security proxy:
+python3 security_proxy.py --port 8085
+
+# 2. Test malicious content blocking:
+curl -x http://localhost:8085 http://example-malicious-site.com
+# (Will be blocked with security warning)
+
+# 3. Test keyword filtering:
+curl -x http://localhost:8085 "http://httpbin.org/get?query=confidential"
+# (May be blocked based on keyword policies)
+
+# 4. Test rate limiting protection:
+# Rapid requests to simulate attack
+for i in {1..50}; do
+  curl -x http://localhost:8085 http://httpbin.org/get &
+done
+
+# 5. Monitor security events:
+curl http://localhost:8085/_security/stats
+curl http://localhost:8085/_security/policy
+
+🛡️ SECURITY FEATURES:
+
 A security-focused proxy that provides:
 - SSL/TLS termination and inspection
 - Content filtering and malware scanning

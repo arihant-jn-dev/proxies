@@ -2,7 +2,91 @@
 """
 Simple Load Balancer Proxy Demo
 
+🎯 MAIN PURPOSE:
 A basic round-robin load balancer that distributes requests across multiple backend servers.
+
+🔍 WHAT WE'RE TRYING TO ACCOMPLISH:
+1. **High Availability**: Keep services running even if individual servers fail
+2. **Performance Distribution**: Spread load across multiple servers
+3. **Scalability**: Easily add more servers to handle increased traffic
+4. **Fault Tolerance**: Automatically detect and bypass failed servers
+5. **Resource Optimization**: Efficiently utilize available server capacity
+
+📊 REAL-WORLD USE CASES:
+
+1. **Web Application Scaling**:
+   - E-commerce sites during peak shopping periods
+   - Social media platforms handling millions of users
+   - News websites during breaking news events
+   - Online gaming platforms with global user base
+
+2. **API Gateway**:
+   - Microservices architecture with multiple API instances
+   - Third-party API rate limiting distribution
+   - Database query load distribution
+   - Background job processing systems
+
+3. **Content Delivery**:
+   - Video streaming services with multiple CDN nodes
+   - Image serving across geographic regions
+   - Static file delivery optimization
+   - Download mirrors for software distribution
+
+4. **Enterprise Applications**:
+   - Internal business applications with multiple app servers
+   - Database connection pooling across replicas
+   - File server access distribution
+   - Email server load balancing
+
+🧪 TESTING EXAMPLES:
+
+# 1. Start load balancer with default backends:
+python3 simple_load_balancer.py --port 8082
+
+# 2. Test load distribution:
+curl http://localhost:8082/get     # Routes to Backend 1
+curl http://localhost:8082/get     # Routes to Backend 2  
+curl http://localhost:8082/get     # Routes to Backend 1 (round-robin)
+
+# 3. Check load balancer status:
+curl http://localhost:8082/_lb/health     # Health status
+curl http://localhost:8082/_lb/stats      # Request statistics
+
+# 4. Test with multiple requests:
+for i in {1..10}; do
+  curl -s http://localhost:8082/get | grep -o '"origin": "[^"]*"'
+done
+# You'll see requests distributed across different backend servers!
+
+# 5. Test failover:
+# Stop one backend server and see requests automatically route to healthy servers
+
+🏗️ LOAD BALANCING ALGORITHMS EXPLAINED:
+
+1. **Round Robin** (implemented here):
+   - Requests distributed evenly in circular order
+   - Simple and fair distribution
+   - Good for servers with similar capacity
+
+2. **Weighted Round Robin**:
+   - Servers get different weights based on capacity
+   - More powerful servers handle more requests
+   - Better for heterogeneous environments
+
+3. **Least Connections**:
+   - Route to server with fewest active connections  
+   - Good for long-running requests
+   - Automatically adapts to server response times
+
+4. **Random**:
+   - Randomly select backend server
+   - Simple but less predictable
+   - Good for stateless applications
+
+5. **Hash-based**:
+   - Use request characteristics for consistent routing
+   - Ensures same client goes to same server
+   - Important for session-based applications
 
 Load Balancing Concepts:
 Load balancing distributes incoming requests across multiple backend servers to:
@@ -10,13 +94,6 @@ Load balancing distributes incoming requests across multiple backend servers to:
 - Prevent any single server from becoming overwhelmed
 - Provide redundancy in case a server fails
 - Scale horizontally by adding more servers
-
-Load Balancing Algorithms:
-1. Round Robin: Requests are distributed evenly in circular order (implemented here)
-2. Weighted Round Robin: Servers get different weights based on capacity
-3. Least Connections: Route to server with fewest active connections
-4. Random: Randomly select a backend server
-5. Hash-based: Use request characteristics to consistently route to same server
 
 How This Implementation Works:
 1. Maintain a list of backend servers
