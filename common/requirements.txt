@@ -1,0 +1,32 @@
+# Common Requirements for Proxy Examples
+
+# Core networking and async libraries
+aiohttp>=3.8.0
+asyncio-mqtt>=0.11.0
+websockets>=10.0
+
+# Performance and monitoring
+psutil>=5.9.0
+prometheus-client>=0.15.0
+
+# Security and SSL
+cryptography>=3.4.8
+certifi>=2022.0.0
+
+# Configuration and data handling
+pyyaml>=6.0
+python-dotenv>=0.19.0
+click>=8.0.0
+
+# Testing and development
+pytest>=7.0.0
+pytest-asyncio>=0.20.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+
+# Optional: For advanced proxy features
+dnspython>=2.2.0  # DNS resolution
+uvloop>=0.17.0    # High-performance event loop (Unix only)
+httpx>=0.23.0     # Alternative HTTP client
+mitmproxy>=8.0.0  # For transparent proxy examples
