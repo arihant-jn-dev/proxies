@@ -3,17 +3,42 @@
 Simple SOCKS5 Proxy Demo
 
 A basic SOCKS5 proxy implementation for demonstration purposes.
+
+SOCKS5 Protocol Explanation:
+SOCKS5 operates at Layer 5 (Session Layer) and creates a tunnel between
+client and target server. Unlike HTTP proxies that understand HTTP,
+SOCKS5 is protocol-agnostic and can tunnel any TCP/UDP traffic.
+
+Protocol Flow:
+1. Client connects to SOCKS5 proxy
+2. Authentication negotiation (we use "no authentication" method)
+3. Client sends connection request with target server details
+4. Proxy establishes connection to target server  
+5. Proxy sends success/failure response to client
+6. Bidirectional data relay begins
+
+Advantages over HTTP proxy:
+- Works with any protocol (not just HTTP)
+- Supports UDP relay
+- More secure (doesn't modify data)
+- Better for applications that need direct socket access
 """
 
-import asyncio
-import logging
-import socket
-import struct
-import argparse
+import asyncio      # Async I/O for concurrent connection handling
+import logging      # Structured logging for debugging
+import socket       # Low-level socket operations for network connections
+import struct       # Binary data packing/unpacking for SOCKS5 protocol
+import argparse     # Command line argument parsing
 
 class SimpleSocks5Proxy:
-    """Simple SOCKS5 proxy for demonstration."""
+    """
+    Simple SOCKS5 proxy for demonstration.
     
+    Implements the SOCKS5 protocol as defined in RFC 1928.
+    This proxy handles the SOCKS5 handshake and data relay.
+    """
+    
+    # SOCKS5 protocol version number (always 0x05)
     VERSION = 0x05
     
     def __init__(self, host='localhost', port=1080):

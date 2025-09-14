@@ -1,28 +1,55 @@
 #!/usr/bin/env python3
 """
 Common utilities for proxy implementations and testing.
+
 This module provides shared functionality across all proxy examples.
+
+Key Components:
+1. ProxyLogger - Structured logging with request/response tracking
+2. PerformanceMonitor - Metrics collection and performance analysis  
+3. ConfigManager - Configuration file handling and defaults
+4. NetworkUtils - Common networking operations
+5. AuthenticationManager - User authentication and authorization
+
+These utilities ensure consistent behavior and reduce code duplication
+across different proxy implementations.
 """
 
-import asyncio
-import json
-import logging
-import socket
-import ssl
-import time
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
-import urllib.parse
+import asyncio         # Asynchronous programming support
+import json           # JSON serialization for configs and logs
+import logging        # Python's logging framework  
+import socket         # Low-level networking operations
+import ssl            # SSL/TLS encryption support
+import time           # Time measurements for performance tracking
+from datetime import datetime              # Date/time handling
+from typing import Dict, List, Optional, Tuple, Union    # Type annotations
+import urllib.parse   # URL parsing utilities
 
 
 class ProxyLogger:
-    """Enhanced logging for proxy operations with structured output."""
+    """
+    Enhanced logging for proxy operations with structured output.
+    
+    This class provides specialized logging for proxy operations with:
+    - Structured log formatting for easy parsing
+    - Request/response correlation
+    - Performance timing integration
+    - Different log levels for various operations
+    - Consistent format across all proxy types
+    
+    Usage:
+        logger = ProxyLogger("forward-proxy")
+        logger.request("GET", "http://example.com", "192.168.1.100")
+        logger.response(200, "http://example.com", 150.5)
+    """
     
     def __init__(self, name: str, level: int = logging.INFO):
+        # Create logger instance with specified name (e.g., "forward-proxy")
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
         
         # Create formatter for structured logging
+        # Format: timestamp - logger_name - level - message
         formatter = logging.Formatter(
             '%(asctime)s | %(name)s | %(levelname)s | %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
@@ -95,7 +122,7 @@ class NetworkUtils:
         if size_bytes == 0:
             return "0B"
         
-        units = ['B', 'KB', 'MB', GB', 'TB']
+        units = ['B', 'KB', 'MB', 'GB', 'TB']
         i = 0
         while size_bytes >= 1024.0 and i < len(units) - 1:
             size_bytes /= 1024.0

@@ -4,27 +4,58 @@ Simple HTTP Forward Proxy Demo
 
 A basic HTTP forward proxy that works without external dependencies
 for demonstration purposes.
+
+How Forward Proxies Work:
+1. Client configures browser to use proxy (e.g., localhost:8080)
+2. Instead of connecting directly to target server, client connects to proxy
+3. Client sends HTTP request to proxy, including target server in request line
+4. Proxy parses request, extracts target server information
+5. Proxy establishes new connection to target server
+6. Proxy forwards original request to target server
+7. Target server responds to proxy
+8. Proxy forwards response back to original client
+
+This creates a "forward" flow: Client -> Proxy -> Target Server
 """
 
-import asyncio
-import logging
-import socket
-import sys
-import argparse
-from urllib.parse import urlparse
+import asyncio        # Asynchronous I/O for handling multiple connections efficiently
+import logging       # Structured logging for debugging and monitoring
+import socket         # Low-level network socket operations
+import sys           # System functions and parameters
+import argparse      # Command line argument parsing
+from urllib.parse import urlparse    # Parse URLs to extract host, port, path components
 
 class SimpleHTTPForwardProxy:
-    """Simple HTTP forward proxy for demonstration."""
+    """
+    Simple HTTP forward proxy for demonstration.
+    
+    This class implements a basic forward proxy that:
+    - Listens for client connections on a specified port
+    - Parses HTTP requests to extract target server information
+    - Establishes connections to target servers
+    - Relays data bidirectionally between client and target server
+    """
     
     def __init__(self, host='localhost', port=8080):
+        # Host interface to bind to ('0.0.0.0' for all interfaces, 'localhost' for local only)
         self.host = host
+        # Port number to listen on (commonly 8080 for HTTP proxies)
         self.port = port
+        # Logger for debugging and monitoring proxy activity
         self.logger = logging.getLogger('forward-proxy')
         
     async def handle_client(self, client_reader, client_writer):
-        """Handle client connection."""
+        """
+        Handle incoming client connection.
+        
+        This method:
+        1. Reads the HTTP request from the client
+        2. Parses the request to extract target server information
+        3. Establishes connection to target server
+        4. Forwards the request and relays responses
+        """
         try:
-            # Read the HTTP request
+            # Read the first line of HTTP request (e.g., "GET http://example.com/path HTTP/1.1")
             request_line = await client_reader.readline()
             if not request_line:
                 return

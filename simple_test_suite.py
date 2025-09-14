@@ -3,39 +3,88 @@
 Simple Proxy Testing Suite
 
 This script tests the working simple proxy implementations.
+
+Testing Strategy:
+1. Start each proxy type in separate processes
+2. Send real HTTP requests through each proxy
+3. Verify responses are correct and contain proxy headers
+4. Measure performance overhead
+5. Clean up all processes
+
+The test suite validates:
+- HTTP Forward Proxy: Routing requests through proxy
+- SOCKS5 Proxy: Low-level TCP tunneling
+- Load Balancer: Request distribution and health monitoring
+- Performance: Comparing direct vs proxy response times
 """
 
-import subprocess
-import time
-import urllib.request
-import json
-import signal
-import sys
-import os
+import subprocess       # Launch proxy processes in background
+import time            # Timing measurements and delays
+import urllib.request  # HTTP client for testing requests
+import json           # Parse JSON responses for validation
+import signal         # Signal handling for graceful cleanup
+import sys            # System parameters and exit codes
+import os             # Operating system interface
 
 class SimpleProxyTester:
-    """Simple proxy testing suite for working implementations."""
+    """
+    Simple proxy testing suite for working implementations.
+    
+    This class orchestrates the testing of all proxy types by:
+    1. Managing proxy processes (start/stop)
+    2. Executing test scenarios against each proxy
+    3. Collecting and analyzing results
+    4. Providing comprehensive reporting
+    """
     
     def __init__(self):
+        # List to track all spawned proxy processes for cleanup
         self.processes = []
+        # Dictionary to store test results for each proxy type
         self.test_results = {}
     
     def start_proxy(self, script_name, port, wait_time=3):
-        """Start a proxy server and return the process."""
+        """
+        Start a proxy server and return the process.
+        
+        This method:
+        1. Constructs command line to run proxy script
+        2. Starts process in background using subprocess.Popen
+        3. Waits for proxy to initialize
+        4. Verifies proxy started successfully
+        5. Tracks process for later cleanup
+        
+        Args:
+            script_name: Python script filename (e.g., 'simple_forward_proxy.py')
+            port: Port number for proxy to listen on
+            wait_time: Seconds to wait for proxy startup
+            
+        Returns:
+            subprocess.Popen object or None if startup failed
+        """
+        # Build command: [python, script_name, --port, port_number]
         cmd = [sys.executable, script_name, "--port", str(port)]
         
         print(f"🚀 Starting {script_name} on port {port}...")
+        
+        # Start proxy process in background
+        # stdout/stderr captured to prevent terminal spam
         process = subprocess.Popen(
             cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
+            stdout=subprocess.PIPE,   # Capture standard output
+            stderr=subprocess.PIPE,   # Capture error output
+            text=True                 # Handle output as text strings
         )
         
+        # Keep track of process for cleanup
         self.processes.append((process, script_name))
-        time.sleep(wait_time)  # Wait for proxy to start
         
+        # Wait for proxy to initialize before continuing
+        time.sleep(wait_time)  
+        
+        # Check if process crashed during startup
         if process.poll() is not None:
+            # Process exited, something went wrong
             stdout, stderr = process.communicate()
             print(f"❌ Failed to start {script_name}")
             print(f"Error: {stderr}")

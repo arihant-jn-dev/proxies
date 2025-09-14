@@ -3,31 +3,82 @@
 Simple Load Balancer Proxy Demo
 
 A basic round-robin load balancer that distributes requests across multiple backend servers.
+
+Load Balancing Concepts:
+Load balancing distributes incoming requests across multiple backend servers to:
+- Improve application performance and availability
+- Prevent any single server from becoming overwhelmed
+- Provide redundancy in case a server fails
+- Scale horizontally by adding more servers
+
+Load Balancing Algorithms:
+1. Round Robin: Requests are distributed evenly in circular order (implemented here)
+2. Weighted Round Robin: Servers get different weights based on capacity
+3. Least Connections: Route to server with fewest active connections
+4. Random: Randomly select a backend server
+5. Hash-based: Use request characteristics to consistently route to same server
+
+How This Implementation Works:
+1. Maintain a list of backend servers
+2. For each request, select next server using round-robin
+3. Forward the request to selected backend
+4. Return backend response to client
+5. Track statistics for monitoring
+
+Benefits:
+- High availability (if one server fails, others continue)
+- Better performance (load distributed across servers)
+- Scalability (easy to add more backend servers)
 """
 
-import asyncio
-import http.server
-import socketserver
-import urllib.request
-import urllib.parse
-import json
-import threading
-import time
-from collections import deque
+import asyncio               # Asynchronous I/O for handling concurrent requests
+import http.server          # HTTP server framework for handling requests
+import socketserver         # Socket server framework for network services
+import urllib.request       # HTTP client for making requests to backends
+import urllib.parse         # URL parsing utilities
+import json                 # JSON serialization for API responses and stats
+import threading            # Threading support (used by socketserver)
+import time                 # Time functions for logging and statistics
+from collections import deque    # Double-ended queue for efficient rotation (round-robin)
 
 class SimpleLoadBalancer:
-    """Simple round-robin load balancer."""
+    """
+    Simple round-robin load balancer.
+    
+    This class manages a pool of backend servers and distributes requests
+    among them using a round-robin algorithm. It also tracks statistics
+    for monitoring performance and health.
+    """
     
     def __init__(self, backends, port=8082):
-        self.backends = deque(backends)  # Using deque for efficient rotation
+        # Use deque for efficient rotation - deque.rotate() is O(1)
+        # This makes round-robin selection very fast
+        self.backends = deque(backends)  
+        
+        # Port for the load balancer to listen on
         self.port = port
+        
+        # Statistics tracking for each backend server
+        # Tracks requests sent and errors encountered per backend
         self.stats = {backend: {"requests": 0, "errors": 0} for backend in backends}
+        
+        # Will hold reference to the HTTP server instance
         self.server = None
         
     def get_next_backend(self):
-        """Get next backend using round-robin algorithm."""
-        backend = self.backends[0]
-        self.backends.rotate(-1)  # Move first to last
+        """
+        Get next backend using round-robin algorithm.
+        
+        Round-robin works by cycling through backends in order:
+        - First request goes to backend[0]
+        - Second request goes to backend[1] 
+        - After last backend, wraps around to backend[0]
+        
+        Using deque.rotate(-1) efficiently moves first element to end,
+        so self.backends[0] always gives us the "next" backend.
+        """
+        backend = self.backends[0]        # Get current first backend
+        self.backends.rotate(-1)          # Move first to last (rotate left by 1)
         return backend
     
     def health_check(self, backend):

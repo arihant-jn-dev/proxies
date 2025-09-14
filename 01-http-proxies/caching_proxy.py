@@ -16,47 +16,67 @@ Usage:
     python caching_proxy.py --port 8080 --cache-size 100MB --cache-ttl 300
 """
 
-import argparse
-import asyncio
-import hashlib
-import json
-import logging
-import os
-import pickle
-import sys
-import time
-from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple, Any
-from urllib.parse import urlparse
+import argparse          # Command line argument parsing
+import asyncio            # Asynchronous I/O operations
+import hashlib            # Generate cache keys using SHA256 hashing
+import json              # JSON serialization for API responses
+import logging           # Structured logging for debugging and monitoring
+import os                # Operating system interface for file operations
+import pickle            # Python object serialization for disk cache
+import sys               # System-specific parameters and functions
+import time              # Time-related functions for cache expiry
+from datetime import datetime, timedelta    # Date/time handling for HTTP cache headers
+from typing import Dict, Optional, Tuple, Any    # Type hints for better code clarity
+from urllib.parse import urlparse    # URL parsing utilities
 
-import aiohttp
-from aiohttp import web, ClientSession
-from aiohttp.web import Request, Response
+import aiohttp           # High-performance HTTP client/server library
+from aiohttp import web, ClientSession    # Web framework and HTTP client
+from aiohttp.web import Request, Response    # HTTP request/response objects
 
 # Add parent directory to path for common utilities
+# This allows importing shared utilities from the common folder
 sys.path.append('../common')
 from utils import ProxyLogger, PerformanceMonitor, ConfigManager, NetworkUtils
 
 
 class CacheEntry:
-    """Represents a cached HTTP response."""
+    """
+    Represents a cached HTTP response with metadata.
+    
+    This class stores all information needed to serve a cached response:
+    - Response data (body content)
+    - HTTP headers 
+    - Status code
+    - Cache timing information
+    - Access statistics
+    """
     
     def __init__(self, response_data: bytes, headers: Dict[str, str], 
                  status_code: int, ttl: int = 300):
+        # Store the actual response content as bytes
         self.response_data = response_data
+        # Store HTTP headers as dictionary for easy access
         self.headers = headers
+        # HTTP status code (200, 404, etc.)
         self.status_code = status_code
+        # When this cache entry was created (Unix timestamp)
         self.created_at = time.time()
+        # Time To Live - how long this entry should be cached (seconds)
         self.ttl = ttl
+        # Track how many times this cached response has been used
         self.access_count = 0
+        # When this entry was last accessed (for LRU eviction)
         self.last_accessed = time.time()
         
-        # Extract cache-related headers
+        # Extract cache-related headers for HTTP compliance
+        # ETag is used for conditional requests (If-None-Match)
         self.etag = headers.get('etag', '')
+        # Last-Modified is used for conditional requests (If-Modified-Since)  
         self.last_modified = headers.get('last-modified', '')
+        # Cache-Control header contains caching directives
         self.cache_control = headers.get('cache-control', '')
         
-        # Calculate expiry based on Cache-Control headers
+        # Calculate when this entry expires based on HTTP cache headers
         self.expires_at = self._calculate_expiry()
     
     def _calculate_expiry(self) -> float:
